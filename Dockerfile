@@ -16,4 +16,5 @@ COPY . $HOME
 
 RUN apt-get update && apt-get -y install sudo apt-utils
 RUN ./extra/provision.sh -m $MODE -c $TYPE -k $KEY -C $CRT -D $DOMAIN -e $EMAIL -s `pwd` --docker
+RUN sed -i "s/.*bind-address.*/bind-address = 0.0.0.0/" /etc/mysql/mysql.conf.d/mysqld.cnf
 CMD ["./extra/service_startup.sh"]
