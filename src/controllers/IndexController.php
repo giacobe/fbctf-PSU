@@ -1059,6 +1059,9 @@ class IndexController extends Controller {
                 {tr('Login')}
               </button>
             </div>
+            <div class="form-el--footer">
+              {$registration_button}
+            </div>
           </form>
         </div>;
 
@@ -1327,6 +1330,13 @@ class IndexController extends Controller {
           <li>
             <a href="/index.php?page=rules" data-active="rules">
               {tr('Rules')}
+            </a>
+          </li>
+          <li>
+            <a
+              href="/index.php?page=registration"
+              data-active="registration">
+              {tr('Registration')}
             </a>
           </li>
           <li>
