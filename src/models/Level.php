@@ -398,11 +398,7 @@ class Level extends Model implements Importable, Exportable {
     $country = await Country::gen($country_id);
     await \HH\Asio\va(
       Announcement::genCreateAuto($country->getName()." added!"),
-      ActivityLog::genAdminLog("added", "Country", $country_id),
     );
-
-    ActivityLog::invalidateMCRecords('ALL_ACTIVITY');
-
     return intval(must_have_idx($result->mapRows()[0], 'id'));
   }
 
@@ -642,11 +638,9 @@ class Level extends Model implements Importable, Exportable {
       $country_id = await self::genCountryIdForLevel($level_id);
       $country = await Country::gen($country_id);
       await \HH\Asio\va(
-        ActivityLog::genAdminLog("updated", "Country", $country_id),
         Announcement::genCreateAuto($country->getName()." updated!"),
       );
       self::invalidateMCRecords(); // Invalidate Memcached Level data.
-      ActivityLog::invalidateMCRecords('ALL_ACTIVITY'); // Invalidate Memcached ActivityLog data.
     }
   }
 
@@ -722,12 +716,11 @@ class Level extends Model implements Importable, Exportable {
       $action = ($active === true) ? "enabled" : "disabled";
       $country_id = await self::genCountryIdForLevel($level_id);
       $country = await Country::gen($country_id);
+      await Country::genSetStatus($country_id, true);
       await \HH\Asio\va(
-        ActivityLog::genAdminLog($action, "Country", $country_id),
         Announcement::genCreateAuto($country->getName().' '.$action.'!'),
       );
       self::invalidateMCRecords();
-      ActivityLog::invalidateMCRecords('ALL_ACTIVITY');
     }
   }
 
@@ -1210,7 +1203,6 @@ class Level extends Model implements Importable, Exportable {
             HintLog::genLogGetHint($level_id, $team_id, $penalty),
           );
 
-          ActivityLog::invalidateMCRecords('ALL_ACTIVITY'); // Invalidate Memcached ActivityLog data.
           MultiTeam::invalidateMCRecords('ALL_TEAMS'); // Invalidate Memcached MultiTeam data.
           MultiTeam::invalidateMCRecords('POINTS_BY_TYPE'); // Invalidate Memcached MultiTeam data.
           MultiTeam::invalidateMCRecords('LEADERBOARD'); // Invalidate Memcached MultiTeam data.
@@ -1313,7 +1305,7 @@ class Level extends Model implements Importable, Exportable {
 
     $result =
       await $db->queryf(
-        'SELECT COUNT(*) FROM levels WHERE type = %s AND title = %s AND entity_id IN (SELECT id FROM countries WHERE iso_code = %s)',
+        'SELECT EXISTS(SELECT * FROM levels WHERE type = %s AND title = %s AND entity_id IN (SELECT id from countries WHERE iso_code = %s))',
         $type,
         $title,
         $entity_iso_code,
@@ -1321,26 +1313,7 @@ class Level extends Model implements Importable, Exportable {
 
     if ($result->numRows() > 0) {
       invariant($result->numRows() === 1, 'Expected exactly one result');
-      return (intval(idx($result->mapRows()[0], 'COUNT(*)')) > 0);
-    } else {
-      return false;
-    }
-  }
-
-  // Check if a level already exists by type, title and entity.
-  public static async function genAlreadyExistById(
-    int $level_id,
-  ): Awaitable<bool> {
-    $db = await self::genDb();
-
-    $result = await $db->queryf(
-      'SELECT COUNT(*) FROM levels WHERE id = %d',
-      $level_id,
-    );
-
-    if ($result->numRows() > 0) {
-      invariant($result->numRows() === 1, 'Expected exactly one result');
-      return (intval(idx($result->mapRows()[0], 'COUNT(*)')) > 0);
+      return intval($result->mapRows()[0]->firstValue()) > 0;
     } else {
       return false;
     }
@@ -1382,7 +1355,7 @@ class Level extends Model implements Importable, Exportable {
     $db = await self::genDb();
     $result =
       await $db->queryf(
-        'SELECT COUNT(*) FROM levels WHERE type = %s AND title = %s AND description = %s AND points = %d',
+        'SELECT EXISTS(SELECT * FROM levels WHERE type = %s AND title = %s AND description = %s AND points = %d)',
         $type,
         $title,
         $description,
@@ -1390,7 +1363,7 @@ class Level extends Model implements Importable, Exportable {
       );
     if ($result->numRows() > 0) {
       invariant($result->numRows() === 1, 'Expected exactly one result');
-      return (intval(idx($result->mapRows()[0], 'COUNT(*)')) > 0);
+      return intval($result->mapRows()[0]->firstValue()) > 0;
     } else {
       return false;
     }
