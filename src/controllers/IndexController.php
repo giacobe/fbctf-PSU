@@ -1268,13 +1268,6 @@ class IndexController extends Controller {
             </a>
           </li>
           <li>
-            <a
-              href="/index.php?page=registration"
-              data-active="registration">
-              {tr('Registration')}
-            </a>
-          </li>
-          <li>
             <a href="/index.php?page=login" data-active="login">
               {tr('Login')}
             </a>
