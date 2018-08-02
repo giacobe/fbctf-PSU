@@ -1015,7 +1015,7 @@ class IndexController extends Controller {
       $registration_button = '';
       if ($registration->getValue() === '1') {
         $registration_button =
-          <a href="/index.php?page=registration" class="fb-cta cta--blue">
+          <a href="https://ist.psu.edu/future-students/cybergame" class="fb-cta cta--blue">
             {tr('Sign Up')}
           </a>;
         $header_message =
@@ -1272,7 +1272,7 @@ class IndexController extends Controller {
           </li>
           <li>
             <a
-              href="/index.php?page=registration"
+              href="https://ist.psu.edu/future-students/cybergame"
               data-active="registration">
               {tr('Registration')}
             </a>
@@ -1341,7 +1341,7 @@ class IndexController extends Controller {
           </li>
           <li>
             <a
-              href="/index.php?page=registration"
+              href="https://ist.psu.edu/future-students/cybergame"
               data-active="registration">
               {tr('Registration')}
             </a>
